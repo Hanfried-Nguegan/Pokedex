@@ -1,9 +1,9 @@
 import Head from 'next/head'
 import Header from '../components/Header'
 import SearchBar from '../components/SearchBar'
-import axios from 'axios'
 
-export default function Home() {
+export default function Home({ pokemonData }) {
+  console.log(pokemonData)
   return (
     <div>
       <Head>
@@ -22,11 +22,23 @@ export default function Home() {
   )
 }
 
-export async function getStaticProps() {
-  fetch('https://pokeapi.co/api/v2/pokemon?limit=151')
-    .then((res) => res.json())
-    .then((allpokemon) => console.log(allpokemon))
-  return {
-    props: {},
+export async function getStaticProps(context) {
+  try {
+    const res = await fetch('https://pokeapi.co/api/v2/pokemon?limit=150')
+    const { results } = await res.json()
+    const pokemonData = results.map((result, index) => {
+      const paddedIndex = ('00' + (index + 1)).slice(-3)
+      const image = `https://assets.pokemon.com/assets/cms2/img/pokedex/detail/${paddedIndex}.png`
+      return {
+        ...result,
+        image,
+      }
+    })
+
+    return {
+      props: { pokemonData },
+    }
+  } catch (err) {
+    console.error(err)
   }
 }
